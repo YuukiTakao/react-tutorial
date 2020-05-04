@@ -1,40 +1,26 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux'
 import Board from './board'
+import { clickSquare, jumpToPast } from '../action'
 
-const Game = () => {
-  const [history, setHistory] = useState([{
-    squares: Array(9).fill(null)
-  }])
-  const [stepNumber, setStepNumber] = useState(0)
-  const [xIsNext, setXIsNext] = useState(true)
 
-  const handleClick = (i) => {
-    const historyUntilCurrentStep = history.slice(0, stepNumber + 1);
-    const current = historyUntilCurrentStep[historyUntilCurrentStep.length - 1];
-    const squares = current.squares.slice();
-    if (calculateWinner(squares) || squares[i]) {
-      return;
-    }
-    squares[i] = xIsNext ? "X" : "O";
-    setHistory(history.concat([{ squares }]))
-    setStepNumber(history.length)
-    setXIsNext(!xIsNext)
-  }
+export const Game = () => {
+  const dispatch = useDispatch()
+  const history = useSelector(state => state.game.history)
+  const stepNumber = useSelector(state => state.game.stepNumber)
+  const xIsNext = useSelector(state => state.game.xIsNext)
 
-  const jumpTo = (step) => {
-    setStepNumber(step)
-    setXIsNext((step % 2) === 0)
-  }
-  const current = history[stepNumber];
-  const winner = calculateWinner(current.squares);
+  console.log(history, stepNumber)
+  const current = history[stepNumber]
+  const winner = calculateWinner(current.squares)
 
-  const moves = history.map((step, move) => {
+  const moves = history.map((sqares, move) => {
     const desc = move ?
       'Go to move #' + move :
       'Go to game start';
     return (
       <li key={move}>
-        <button onClick={() => jumpTo(move)}>{desc}</button>
+        <button onClick={() => dispatch(jumpToPast(move))}>{desc}</button>
       </li>
     );
   });
@@ -51,7 +37,7 @@ const Game = () => {
       <div className="game-board">
         <Board
           squares={current.squares}
-          onClick={i => handleClick(i)}
+          onClick={i => dispatch(clickSquare(i))}
         />
       </div>
       <div className="game-info">
@@ -81,7 +67,3 @@ function calculateWinner(squares) {
   }
   return null;
 }
-
-
-
-export default Game
